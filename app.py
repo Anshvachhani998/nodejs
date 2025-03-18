@@ -1,43 +1,29 @@
-# app.py
+import os
+import sys
+import logging
+import subprocess
 
-from flask import Flask, request, jsonify
-import yt_dlp
+# Set up logging to log to the console (Render logs will capture it)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-app = Flask(__name__)
-
-# API endpoint to fetch video info
-@app.route('/video', methods=['GET'])
-def get_video_info():
-    video_url = request.args.get('url')  # URL passed as query parameter
-
-    if not video_url:
-        return jsonify({'error': 'URL is required'}), 400
-
+def get_video_info(url):
     try:
-        # Initialize yt-dlp options
-        ydl_opts = {
-            'quiet': True,
-            'forcejson': True
-        }
+        # Using you-get to fetch video info
+        command = f"you-get -i {url}"
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate()
 
-        # Fetch video information
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            video_info = ydl.extract_info(video_url, download=False)
+        if process.returncode != 0:
+            logger.error(f"Error fetching video info: {stderr.decode('utf-8')}")
+            return
 
-        # Extract the relevant data
-        response = {
-            'title': video_info.get('title'),
-            'description': video_info.get('description'),
-            'thumbnail': video_info.get('thumbnail'),
-            'formats': video_info.get('formats'),
-            'url': video_info.get('url'),
-        }
-
-        return jsonify(response)
-
+        # Parsing output
+        video_info = stdout.decode('utf-8')
+        logger.info(f"Video Info:\n{video_info}")
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        logger.error(f"An error occurred: {str(e)}")
 
-
-if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=5000)
+if __name__ == '__main__':
+    video_url = "https://youtu.be/0a83CZ0z2aM?si=8HqI0K_dL5-s7Wlx"
+    get_video_info(video_url)
