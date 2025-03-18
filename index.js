@@ -1,5 +1,31 @@
 import { savefrom } from '@bochilteam/scraper-savefrom';
 
+// iTag to Quality Mapping
+const qualityMap = {
+  // Video + Audio
+  18: '360p Both',
+  22: '720p Both',
+
+  // Video Only (MP4 and WebM)
+  137: '1080p Video',
+  136: '720p Video',
+  135: '480p Video',
+  134: '360p Video',
+  133: '240p Video',
+  160: '144p Video',
+  399: '1080p Video',
+  398: '720p Video',
+  397: '480p Video',
+  243: '360p Video',
+  242: '240p Video',
+
+  // Audio Only
+  140: '128kbps Audio',
+  251: '160kbps Audio',
+  250: '128kbps Audio',
+  249: '96kbps Audio'
+};
+
 // Function to calculate bitrate
 function calculateBitrate(clen, dur) {
   if (!clen || !dur) return 'Unknown';
@@ -28,7 +54,7 @@ async function getVideoAndAudioFormats(url) {
         console.log('\nVideo Formats (mp4 or webm only):');
         const videoFormats = item.url?.filter(format => format.ext === 'mp4' || format.ext === 'webm');
         videoFormats?.forEach((format, index) => {
-          const quality = resolutions[index] || 'Unknown Quality';
+          const quality = qualityMap[format.itag] || resolutions[index] || 'Unknown Quality';
           console.log(`- ${format.ext.toUpperCase()} (Quality: ${quality}, URL: ${format.url})`);
         });
 
