@@ -1,9 +1,8 @@
-// import module
-import { youtubedl } from '@bochilteam/scraper-youtube'
+import { savefrom } from '@bochilteam/scraper-savefrom'
 
-const data = await youtubedl('https://youtu.be/iik25wqIuFo')
-console.log(data) // JSON
-const resolutions = Object.keys(data.video) // List of resolution/quality
-console.log(resolutions) 
-const url = await data.video[resolutions[0]].download() // Download '720p' video
-console.log(url) // string
+const data = await savefrom('https://youtu.be/iik25wqIuFo')
+
+// URLs ko log karte waqt unke andar ke values ko properly access karna
+data[0].url.forEach((item, index) => {
+  console.log(`URL ${index + 1}:`, item.url); // item.url ko access karte hain
+});
