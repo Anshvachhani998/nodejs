@@ -20,19 +20,19 @@ async function getVideoAndAudioFormats(url) {
         console.log('Resolutions:', resolutions.map(res => res.quality).join(', '));
 
         // Video formats (only mp4 and webm)
-        console.log('Video Formats (mp4 or webm only):');
+        console.log('\nVideo Formats (mp4 or webm only):');
         const videoFormats = item.url?.filter(format => format.ext === 'mp4' || format.ext === 'webm');
         videoFormats?.forEach(format => {
-          console.log(`- ${format.ext} (Quality: ${format.type}, URL: ${format.url})`);
+          console.log(`- ${format.ext.toUpperCase()} (Quality: ${format.type || 'N/A'}, URL: ${format.url})`);
         });
 
         // Audio formats (mp3, opus, m4a, and any other audio format)
-        console.log('Audio Formats (mp3, opus, m4a, and others):');
+        console.log('\nAudio Formats (mp3, opus, m4a, and others):');
         const audioFormats = item.url?.filter(format => 
-          ['mp3', 'opus', 'm4a', 'aac', 'flac', 'ogg'].includes(format.ext) // Added common audio formats here
+          ['mp3', 'opus', 'm4a', 'aac', 'flac', 'ogg'].includes(format.ext)
         );
         audioFormats?.forEach(format => {
-          console.log(`- ${format.ext} (Type: ${format.type}, URL: ${format.url})`);
+          console.log(`- ${format.ext.toUpperCase()} (Quality: ${format.type || 'N/A'}, URL: ${format.url})`);
         });
       });
     } else {
