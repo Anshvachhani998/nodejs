@@ -86,7 +86,7 @@ async function getVideoAndAudioFormats(url) {
         console.log('\nVideo Formats (mp4 or webm only):');
         const videoFormats = item.url?.filter(format => format.ext === 'mp4' || format.ext === 'webm');
         videoFormats?.forEach((format, index) => {
-          const quality = qualityMap[format.itag] || resolutions[index] || 'Unknown Quality';
+          const quality = qualityMap[format.itag] || 'Unknown Quality';
           console.log(`- ${format.ext.toUpperCase()} (Quality: ${quality}, URL: ${format.url})`);
         });
 
