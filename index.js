@@ -1,10 +1,20 @@
 import { savefrom } from '@bochilteam/scraper-savefrom'
 
+// Map itag to audio quality
+const itagAudioQualityMap = {
+  '139': '48kbps',
+  '140': '128kbps',
+  '141': '256kbps',
+  '249': '50kbps',
+  '250': '70kbps',
+  '251': '160kbps',
+};
+
 // Function to fetch and logically organize video and audio formats
 async function getVideoAndAudioFormats(url) {
   try {
     // Fetching data from the savefrom API
-    const data = await savefrom(url)
+    const data = await savefrom(url);
     
     if (data && Array.isArray(data)) {
       data.forEach(item => {
@@ -32,7 +42,12 @@ async function getVideoAndAudioFormats(url) {
           ['mp3', 'opus', 'm4a', 'aac', 'flac', 'ogg'].includes(format.ext)
         );
         audioFormats?.forEach(format => {
-          console.log(`- ${format.ext.toUpperCase()} (Quality: ${format.type || 'N/A'}, URL: ${format.url})`);
+          // Extract itag from URL
+          const itagMatch = format.url.match(/itag=(\d+)/);
+          const itag = itagMatch ? itagMatch[1] : null;
+          const audioQuality = itag ? itagAudioQualityMap[itag] || 'Unknown' : 'Unknown';
+          
+          console.log(`- ${format.ext.toUpperCase()} (Quality: ${audioQuality}, URL: ${format.url})`);
         });
       });
     } else {
