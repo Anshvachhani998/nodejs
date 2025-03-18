@@ -1,34 +1,38 @@
 import { savefrom } from '@bochilteam/scraper-savefrom'
 
-// Function to fetch and show video formats and quality
-async function getVideoFormats(url) {
+// Function to fetch and show all formats and qualities
+async function getAllFormatsAndQuality(url) {
   try {
     // Fetching data from the savefrom API
     const data = await savefrom(url)
     
-    // Check if the formats or video_quality are available in the response
+    // Check if the data is an array
     if (data && Array.isArray(data)) {
-      // Loop through the response array and filter the formats
       data.forEach(item => {
-        // Extracting formats and their qualities (mp4, mp3, webm, etc.)
+        // Display available video qualities (1080p, 720p, etc.)
         if (item.video_quality && Array.isArray(item.video_quality)) {
-          const formatsAndQuality = item.video_quality.map(quality => ({
-            quality
-          }))
-          
-          console.log('Video Quality:', formatsAndQuality) // Show formats and qualities
+          item.video_quality.forEach(quality => {
+            console.log('Video Quality:', quality.quality)
+          })
         }
-        
-        // Checking and displaying specific formats like mp4, mp3, webm
+
+        // Display available formats (mp4, mp3, webm, etc.)
+        if (item.url && Array.isArray(item.url)) {
+          item.url.forEach(formatItem => {
+            console.log('Format:', formatItem.ext, 'Type:', formatItem.type, 'URL:', formatItem.url)
+          })
+        }
+
+        // Check for SD and HD formats if available
         if (item.sd) {
-          console.log('SD Quality:', item.sd.format, item.sd.quality)
+          console.log('SD Format:', item.sd.format, 'Quality:', item.sd.quality)
         }
         if (item.hd) {
-          console.log('HD Quality:', item.hd.format, item.hd.quality)
+          console.log('HD Format:', item.hd.format, 'Quality:', item.hd.quality)
         }
       })
     } else {
-      console.log('No formats or video quality found.')
+      console.log('No video formats or qualities available.')
     }
   } catch (error) {
     console.log('Error fetching video data:', error)
@@ -36,4 +40,4 @@ async function getVideoFormats(url) {
 }
 
 // Example usage
-getVideoFormats('https://youtu.be/iik25wqIuFo')
+getAllFormatsAndQuality('https://youtu.be/iik25wqIuFo')
