@@ -35,7 +35,7 @@ async function getVideoAndAudioFormats(url) {
         // Audio formats (auto-detect quality)
         console.log('\nAudio Formats (Auto Quality Detection):');
         const audioFormats = item.url?.filter(format =>
-          ['mp3', 'opus', 'm4a', 'aac', 'flac', 'ogg', 'webm'].includes(format.ext)
+          ['mp3', 'opus', 'm4a', 'aac', 'flac', 'ogg'].includes(format.ext)
         );
         audioFormats?.forEach(format => {
           const clenMatch = format.url.match(/clen=(\d+)/);
