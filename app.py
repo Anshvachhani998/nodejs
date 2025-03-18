@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 def get_video_info(url):
     try:
         # Using you-get to fetch video info
-        command = f"you-get -i {url}"
+        command = f"you-get -d {url}"
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
 
