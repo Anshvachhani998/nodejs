@@ -7,7 +7,7 @@ function calculateBitrate(clen, dur) {
   return `${Math.round(bitrate)} kbps`;
 }
 
-// Function to fetch and logically organize video and audio formats
+// Fetch and logically organize video and audio formats
 async function getVideoAndAudioFormats(url) {
   try {
     const data = await savefrom(url);
@@ -19,30 +19,31 @@ async function getVideoAndAudioFormats(url) {
         
         console.log('Title:', title);
         console.log('Duration:', duration);
-        
-        const resolutions = item.video_quality || [];
-        console.log('Resolutions:', resolutions.map(res => res.quality).join(', '));
+
+        // Video resolutions from 'video_quality'
+        const resolutions = item.video_quality?.map(res => res.quality) || [];
+        console.log('Resolutions:', resolutions.join(', '));
 
         // Video formats (only mp4 and webm)
         console.log('\nVideo Formats (mp4 or webm only):');
         const videoFormats = item.url?.filter(format => format.ext === 'mp4' || format.ext === 'webm');
-        videoFormats?.forEach(format => {
-          console.log(`- ${format.ext.toUpperCase()} (Quality: ${format.type || 'N/A'}, URL: ${format.url})`);
+        videoFormats?.forEach((format, index) => {
+          const quality = resolutions[index] || 'Unknown Quality';
+          console.log(`- ${format.ext.toUpperCase()} (Quality: ${quality}, URL: ${format.url})`);
         });
 
-        // Audio formats (all audio types)
+        // Audio formats (auto-detect quality)
         console.log('\nAudio Formats (Auto Quality Detection):');
-        const audioFormats = item.url?.filter(format => 
+        const audioFormats = item.url?.filter(format =>
           ['mp3', 'opus', 'm4a', 'aac', 'flac', 'ogg', 'webm'].includes(format.ext)
         );
         audioFormats?.forEach(format => {
-          // Extract clen and dur for bitrate calculation
           const clenMatch = format.url.match(/clen=(\d+)/);
           const durMatch = format.url.match(/dur=([\d.]+)/);
           const clen = clenMatch ? clenMatch[1] : null;
           const dur = durMatch ? durMatch[1] : null;
           const audioQuality = calculateBitrate(clen, dur);
-          
+
           console.log(`- ${format.ext.toUpperCase()} (Quality: ${audioQuality}, URL: ${format.url})`);
         });
       });
