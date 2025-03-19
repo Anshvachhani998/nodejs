@@ -39,11 +39,28 @@ const liveStreamQualityMap = {
   1080: [96, 301]
 };
 
-
 // Extract iTag from URL
 function extractItag(url) {
   const itagMatch = url.match(/[?&]itag=(\d+)/);
   return itagMatch ? parseInt(itagMatch[1]) : null;
+}
+
+// Extract Content Length (clen) from URL
+function extractClen(url) {
+  const clenMatch = url.match(/[?&]clen=(\d+)/);
+  return clenMatch ? parseInt(clenMatch[1]) : null;
+}
+
+// Format File Size to Human-Readable Format
+function formatFileSize(bytes) {
+  if (!bytes) return 'Unknown';
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  let i = 0;
+  while (bytes >= 1024 && i < units.length - 1) {
+    bytes /= 1024;
+    i++;
+  }
+  return `${bytes.toFixed(2)} ${units[i]}`;
 }
 
 // Get Quality from iTag (Supports DASH, Legacy, and Live Stream)
@@ -63,7 +80,6 @@ function getQualityFromItag(itag) {
   // If not found
   return 'Unknown Quality';
 }
-
 
 // Calculate Bitrate
 function calculateBitrate(clen, dur) {
@@ -98,9 +114,12 @@ app.get('/api/yt', async (req, res) => {
         .map(format => {
           const itag = extractItag(format.url);
           const quality = getQualityFromItag(itag);
+          const clen = extractClen(format.url);
+          const size = formatFileSize(clen);
           return {
             format: format.ext.toUpperCase(),
             quality: quality,
+            size: size,
             url: format.url
           };
         }) || [];
@@ -111,11 +130,13 @@ app.get('/api/yt', async (req, res) => {
       const audioFormats = item.url?.filter(format =>
         ['mp3', 'opus', 'm4a', 'aac', 'flac', 'ogg'].includes(format.ext)
       ).map(format => {
+        const clen = extractClen(format.url);
+        const size = formatFileSize(clen);
         const clenMatch = format.url.match(/clen=(\d+)/);
         const durMatch = format.url.match(/dur=([\d.]+)/);
-        const clen = clenMatch ? clenMatch[1] : null;
+        const clenValue = clenMatch ? clenMatch[1] : null;
         const dur = durMatch ? durMatch[1] : null;
-        const bitrate = calculateBitrate(clen, dur);
+        const bitrate = calculateBitrate(clenValue, dur);
         const audioQuality = bitrate === 'Unknown' ? 'Unknown Quality' : `${bitrate} kbps`;
 
         // Select best audio (highest bitrate)
@@ -127,6 +148,7 @@ app.get('/api/yt', async (req, res) => {
         return {
           format: format.ext.toUpperCase(),
           quality: audioQuality,
+          size: size,
           url: format.url
         };
       }) || [];
@@ -149,3 +171,4 @@ app.get('/api/yt', async (req, res) => {
 
 // Start Server
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+
