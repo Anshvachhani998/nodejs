@@ -6,65 +6,16 @@ const PORT = process.env.PORT || 3000;
 
 // iTag to Quality Mapping
 const qualityMap = {
-  // 🎬 Video + Audio
-  5: '240p Both',
-  6: '270p Both',
-  17: '144p Both',
-  18: '360p Both',
-  22: '720p Both',
-  34: '360p Both',
-  35: '480p Both',
-  36: '180p Both',
-  37: '1080p Both',
-  38: '3072p Both',
-  43: '360p Both',
-  44: '480p Both',
-  45: '720p Both',
-  46: '1080p Both',
-
-  // 🎥 Video Only
-  133: '240p Video',
-  134: '360p Video',
-  135: '480p Video',
-  136: '720p Video',
-  137: '1080p Video',
-  138: '2160p Video',
-  160: '144p Video',
-  242: '240p Video',
-  243: '360p Video',
-  244: '480p Video',
-  247: '720p Video',
-  248: '1080p Video',
-  271: '1440p Video',
-  272: '2160p Video',
-  278: '144p Video',
-  313: '2160p Video',
-  315: '2160p Video',
-  298: '720p60 Video',
-  299: '1080p60 Video',
-  303: '1080p60 Video',
-  308: '1440p60 Video',
-  315: '2160p60 Video',
-  394: '144p AV1',
-  395: '240p AV1',
-  396: '360p AV1',
-  397: '480p AV1',
-  398: '720p AV1',
-  399: '1080p AV1',
-  400: '1440p AV1',
-  401: '2160p AV1',
-
-  // 🔊 Audio Only
-  139: '48kbps Audio',
-  140: '128kbps Audio',
-  141: '256kbps Audio',
-  171: '128kbps Audio',
-  172: '192kbps Audio',
-  249: '50kbps Opus',
-  250: '70kbps Opus',
-  251: '160kbps Opus'
+  4320p: [138, 272, 571, 402, 702],
+  2160p: [266, 305, 313, 315, 337, 401, 701],
+  1440p: [264, 304, 271, 308, 336, 400, 700],
+  1080p: [137, 216, 299, 303, 335, 399, 616, 248, 699, 170],
+  720p:  [136, 298, 247, 302, 334, 398, 612, 698, 169],
+  480p:  [168, 135, 244, 397, 333, 697],
+  360p:  [167, 134, 243, 396, 332, 696],
+  240p:  [133, 242, 395, 331, 695],
+  144p:  [160, 597, 278, 394, 330, 694] 
 };
-
 
 // Extract iTag from URL
 function extractItag(url) {
