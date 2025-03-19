@@ -18,6 +18,17 @@ const qualityMap = {
   144:  [160, 597, 278, 394, 330, 694]
 };
 
+const legacyQualityMap = {
+  144: [17, 13, 36],
+  240: [5],
+  270: [6],
+  360: [18, 34, 43],
+  480: [35, 44, 78, 59],
+  720: [22, 45],
+  1080: [37, 46],
+  3072: [38]
+};
+
 // Extract iTag from URL
 function extractItag(url) {
   const itagMatch = url.match(/[?&]itag=(\d+)/);
@@ -26,12 +37,17 @@ function extractItag(url) {
 
 // Get Quality from iTag
 function getQualityFromItag(itag) {
+  // Check in DASH Quality Map
   for (const [quality, itags] of Object.entries(qualityMap)) {
-    if (itags.includes(itag)) return `${quality}p`;
+    if (itags.includes(itag)) return `${quality}p DASH`;
   }
+  // Check in Legacy Quality Map
+  for (const [quality, itags] of Object.entries(legacyQualityMap)) {
+    if (itags.includes(itag)) return `${quality}p NON-DASH`;
+  }
+  // If not found
   return 'Unknown Quality';
 }
-
 // Calculate Bitrate
 function calculateBitrate(clen, dur) {
   if (!clen || !dur) return 'Unknown';
