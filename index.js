@@ -1,4 +1,8 @@
+import express from 'express';
 import { savefrom } from '@bochilteam/scraper-savefrom';
+
+const app = express();
+const PORT = process.env.PORT || 3000;
 
 // iTag to Quality Mapping
 const qualityMap = {
@@ -28,71 +32,79 @@ function calculateBitrate(clen, dur) {
   return Math.round(bitrate);
 }
 
-// Fetch Video and Audio Formats
-async function getVideoAndAudioFormats(url) {
+// Root Route
+app.get('/', (req, res) => {
+  res.send('API is Working! Use /api/yt?url={youtube_url} to get video data.');
+});
+
+// YouTube API Route
+app.get('/api/yt', async (req, res) => {
+  const { url } = req.query;
+  if (!url) return res.status(400).json({ error: 'URL is required' });
+
   try {
     const data = await savefrom(url);
 
-    if (data && Array.isArray(data)) {
-      data.forEach(item => {
-        const title = item.meta?.title || 'No title available';
-        const duration = item.meta?.duration || 'No duration available';
-        
-        console.log('Title:', title);
-        console.log('Duration:', duration);
-
-        
-
-        // Video formats (only mp4 and webm)
-        console.log('\nVideo Formats (mp4 or webm only):');
-        const videoFormats = item.url?.filter(format => format.ext === 'mp4' || format.ext === 'webm');
-        videoFormats?.forEach(format => {
-          const itag = extractItag(format.url);
-          const quality = qualityMap[itag] || 'Unknown Quality';
-          console.log(`- ${format.ext.toUpperCase()} (Quality: ${quality}, URL: ${format.url})`);
-        });
-
-        // Audio formats (auto-detect quality)
-        console.log('\nAudio Formats (Auto Quality Detection):');
-        const audioFormats = item.url?.filter(format =>
-          ['mp3', 'opus', 'm4a', 'aac', 'flac', 'ogg'].includes(format.ext)
-        );
-
-        let bestAudio = null;
-        let highestBitrate = 0;
-
-        audioFormats?.forEach(format => {
-          const clenMatch = format.url.match(/clen=(\d+)/);
-          const durMatch = format.url.match(/dur=([\d.]+)/);
-          const clen = clenMatch ? clenMatch[1] : null;
-          const dur = durMatch ? durMatch[1] : null;
-          const bitrate = calculateBitrate(clen, dur);
-          const itag = extractItag(format.url);
-          const audioQuality = bitrate === 'Unknown' ? (qualityMap[itag] || 'Unknown Quality') : `${bitrate} kbps`;
-
-          console.log(`- ${format.ext.toUpperCase()} (Quality: ${audioQuality}, URL: ${format.url})`);
-
-          // Select best audio (highest bitrate)
-          if (bitrate !== 'Unknown' && bitrate > highestBitrate) {
-            highestBitrate = bitrate;
-            bestAudio = format.url;
-          }
-        });
-
-        // Best Audio
-        if (bestAudio) {
-          console.log('\nBest Audio:', bestAudio);
-        } else {
-          console.log('\nNo best audio found.');
-        }
-      });
-    } else {
-      console.log('No video data available.');
+    if (!data || !Array.isArray(data)) {
+      return res.status(404).json({ error: 'No video data available' });
     }
-  } catch (error) {
-    console.log('Error fetching video data:', error);
-  }
-}
 
-// Example usage
-getVideoAndAudioFormats('https://youtu.be/iik25wqIuFo');
+    const response = data.map(item => {
+      const title = item.meta?.title || 'No title available';
+      const duration = item.meta?.duration || 'No duration available';
+
+      const videoFormats = item.url?.filter(format => format.ext === 'mp4' || format.ext === 'webm').map(format => {
+        const itag = extractItag(format.url);
+        const quality = qualityMap[itag] || 'Unknown Quality';
+        return {
+          format: format.ext.toUpperCase(),
+          quality: quality,
+          url: format.url
+        };
+      });
+
+      let bestAudio = null;
+      let highestBitrate = 0;
+
+      const audioFormats = item.url?.filter(format =>
+        ['mp3', 'opus', 'm4a', 'aac', 'flac', 'ogg'].includes(format.ext)
+      ).map(format => {
+        const clenMatch = format.url.match(/clen=(\d+)/);
+        const durMatch = format.url.match(/dur=([\d.]+)/);
+        const clen = clenMatch ? clenMatch[1] : null;
+        const dur = durMatch ? durMatch[1] : null;
+        const bitrate = calculateBitrate(clen, dur);
+        const itag = extractItag(format.url);
+        const audioQuality = bitrate === 'Unknown' ? (qualityMap[itag] || 'Unknown Quality') : `${bitrate} kbps`;
+
+        // Select best audio (highest bitrate)
+        if (bitrate !== 'Unknown' && bitrate > highestBitrate) {
+          highestBitrate = bitrate;
+          bestAudio = format.url;
+        }
+
+        return {
+          format: format.ext.toUpperCase(),
+          quality: audioQuality,
+          url: format.url
+        };
+      });
+
+      return {
+        title,
+        duration,
+        videoFormats,
+        audioFormats,
+        bestAudio
+      };
+    });
+
+    res.json(response);
+  } catch (error) {
+    console.error('Error fetching video data:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Start Server
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
