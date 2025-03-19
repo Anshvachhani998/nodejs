@@ -108,7 +108,8 @@ app.get('/api/yt', async (req, res) => {
     const response = data.map(item => {
       const title = item.meta?.title || 'No title available';
       const duration = item.meta?.duration || 'No duration available';
-
+      const thumbnail = item.thumb || 'No thumbnail available';
+      
       // Video Formats
       const videoFormats = item.url?.filter(format => format.ext === 'mp4' || format.ext === 'webm')
         .map(format => {
@@ -156,6 +157,7 @@ app.get('/api/yt', async (req, res) => {
       return {
         title,
         duration,
+        thumbnail,
         videoFormats,
         audioFormats,
         bestAudio
