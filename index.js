@@ -29,25 +29,42 @@ const legacyQualityMap = {
   3072: [38]
 };
 
+// Live Stream (non-DASH) iTag to Quality Mapping
+const liveStreamQualityMap = {
+  144: [91, 160],
+  240: [92],
+  360: [93, 132],
+  480: [94],
+  720: [95, 300],
+  1080: [96, 301]
+};
+
+
 // Extract iTag from URL
 function extractItag(url) {
   const itagMatch = url.match(/[?&]itag=(\d+)/);
   return itagMatch ? parseInt(itagMatch[1]) : null;
 }
 
-// Get Quality from iTag
+// Get Quality from iTag (Supports DASH, Legacy, and Live Stream)
 function getQualityFromItag(itag) {
   // Check in DASH Quality Map
   for (const [quality, itags] of Object.entries(qualityMap)) {
-    if (itags.includes(itag)) return `${quality}p DASH`;
+    if (itags.includes(itag)) return `${quality}p (DASH)`;
   }
   // Check in Legacy Quality Map
   for (const [quality, itags] of Object.entries(legacyQualityMap)) {
-    if (itags.includes(itag)) return `${quality}p NON-DASH`;
+    if (itags.includes(itag)) return `${quality}p (Legacy)`;
+  }
+  // Check in Live Stream Quality Map
+  for (const [quality, itags] of Object.entries(liveStreamQualityMap)) {
+    if (itags.includes(itag)) return `${quality}p (Live)`;
   }
   // If not found
   return 'Unknown Quality';
 }
+
+
 // Calculate Bitrate
 function calculateBitrate(clen, dur) {
   if (!clen || !dur) return 'Unknown';
